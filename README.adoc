@@ -1,7 +1,74 @@
 = Example Gradle Project using the Spring Dependency Management Plugin
 
-This example uses the Spring Dependency Management Gradle Plugin to observe the effects of Maven Exclusions.
+This example uses the Spring Dependency Management Gradle Plugin to test and observe the effects of Maven Exclusions.
 
 This repository contains code based on the example from the Spring Dependence Management Plugin https://docs.spring.io/dependency-management-plugin/docs/current/reference/html/[documentation], on the topic of https://docs.spring.io/dependency-management-plugin/docs/current/reference/html/#maven-exclusions[Maven Exclusions].
 
-The `maven-lib` https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/tree/main/maven-lib[module] Maven https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/blob/main/maven-lib/pom.xml[POM] implements the `exclusion example`.
+The `maven-lib` https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/tree/main/maven-lib[module] Maven https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/blob/main/maven-lib/pom.xml[POM] implements the `exclusion-example` described in documentation.
+
+Additionally, this project demonstrates the same Java library as the `maven-lib` using Gradle in the `gradle-lib` https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/tree/main/gradle-lib[module].
+
+Finally, the `example-app` https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/tree/main/example-app[module] implements a Gradle `consumer` to consume both the `maven-lib` and `gradle-lib` build artifacts.
+
+This project sets out to test the effect of the `applyMavenExclusions` setting (see https://docs.spring.io/dependency-management-plugin/docs/current/reference/html/#maven-exclusions-disabling[doc]) of the Spring Dependency Management Plugin. By default, in the consumer (or `example-app`), the `applyMavenExclusions` is set to `false`. See https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/blob/main/example-app/build.gradle.kts#L13-L15[here].
+
+While the project was initially tested with the currently, latest version of Gradle (see https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/blob/main/gradle/wrapper/gradle-wrapper.properties#L4[here]), I additionally tested with Gradle `7.6.4` (see https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/blob/main/gradle/wrapper/gradle-wrapper.properties#L3[here]), which is the same version of Gradle used by the Spring Dependency Management Plugin project (see https://github.com/spring-gradle-plugins/dependency-management-plugin/blob/v1.1.7/gradle/wrapper/gradle-wrapper.properties#L3[here]).
+
+The results of the test were rather surprising. Regardless of the setting for `applyMavenExclusions` (`true` or `false`), the setting did not seem to have any effect on Maven exclusions. In other words, the exclusions declared in the Maven POM (`build.gradle[.kts]`) were excluded no matter what.
+
+For instance, with the `applyMavenExclusions` set to `false` the exclusions declare in either the `maven-lib` or `gradle-lib` build files did not appear in the dependency graph as observed...
+
+. Gradle Dependency Graph for `example-app`
+[subs="verbatim,attributes"]
+[source,kotlin]
+----
+% gradlew --no-daemon --no-build-cache --no-configuration-cache :example-app:dependencies --configuration compileClasspath
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. See https://docs.gradle.org/7.6.4/userguide/gradle_daemon.html#sec:disabling_the_daemon.
+Daemon will be stopped at the end of the build
+
+> Task :example-app:dependencies
+
+------------------------------------------------------------
+Project ':example-app'
+------------------------------------------------------------
+
+compileClasspath - Compile classpath for source set 'main'.
++--- project :gradle-lib
+|    \--- org.springframework:spring-core:6.2.8
++--- io.codeprimate.example:maven-lib:0.1.2
+|    \--- org.springframework:spring-core:6.2.8
+\--- org.springframework.boot:spring-boot-starter-tomcat -> 3.5.3
+     +--- jakarta.annotation:jakarta.annotation-api:2.1.1
+     +--- org.apache.tomcat.embed:tomcat-embed-core:10.1.42
+     +--- org.apache.tomcat.embed:tomcat-embed-el:10.1.42
+     \--- org.apache.tomcat.embed:tomcat-embed-websocket:10.1.42
+          \--- org.apache.tomcat.embed:tomcat-embed-core:10.1.42
+
+(*) - dependencies omitted (listed previously)
+
+A web-based, searchable dependency report is available by adding the --scan option.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 8.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+See https://docs.gradle.org/7.6.4/userguide/command_line_interface.html#sec:command_line_warnings
+
+BUILD SUCCESSFUL in 3s
+1 actionable task: 1 executed
+----
+
+In both the `gradle-lib` as well as the `maven-lib` dependencies, the `org.springframework:spring-jcl` transitive dependency did not resolve in the dependency graph, even when `applyMavenExclusions` was set to `false`.
+
+Additionally, as seen in the dependency graph, I tested with the `org.springframework.boot:spring-boot-starter-tomcat` dependency, which declares an exclusion on `org.apache.tomcat:tomcat-annotations-api`. See Starter https://github.com/spring-projects/spring-boot/blob/v3.5.3/spring-boot-project/spring-boot-starters/spring-boot-starter-tomcat/build.gradle[source].
+
+In the https://central.sonatype.com/artifact/org.springframework.boot/spring-boot-starter-tomcat[published Maven POM] for `spring-boot-starter-tomcat`, you can see the exclusions properly declared.
+
+However, once again, in the output shown above, with `applyMavenExclusions` set to `false`, there is no `org.apache.tomcat:tomcat-annotations-api` transitive dependency in Gradle dependency graph.
+
+In conclusion...
+
+Outside of hopefully avoiding the cost of inspecting the Maven POMs in the detached configuration used by the Spring Dependency Management Plugin and resolved by Gradle, there does not seem to be any observable effect of `applyMavenExclusions` in the dependency graph.
+
+> DISCLAIMER: It is quite possible that I am doing something wrong, but the https://docs.spring.io/dependency-management-plugin/docs/current/reference/html/#maven-exclusions[documentation] was pretty straight forward and clear on the topic.
