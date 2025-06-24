@@ -1,0 +1,7 @@
+= Example Gradle Project using the Spring Dependency Management Plugin
+
+This example uses the Spring Dependency Management Gradle Plugin to observe the effects of Maven Exclusions.
+
+This repository contains code based on the example from the Spring Dependence Management Plugin https://docs.spring.io/dependency-management-plugin/docs/current/reference/html/[documentation], on the topic of https://docs.spring.io/dependency-management-plugin/docs/current/reference/html/#maven-exclusions[Maven Exclusions].
+
+The `maven-lib` https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/tree/main/maven-lib[module] Maven https://github.com/jxblum/gradle-spring-dependency-management-plugin-maven-exclusions/blob/main/maven-lib/pom.xml[POM] implements the `exclusion example`.
