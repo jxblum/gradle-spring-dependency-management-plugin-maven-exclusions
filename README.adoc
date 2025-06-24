@@ -69,6 +69,6 @@ However, once again, in the output shown above, with `applyMavenExclusions` set 
 
 In conclusion...
 
-Outside of hopefully avoiding the cost of inspecting the Maven POMs in the detached configuration used by the Spring Dependency Management Plugin and resolved by Gradle, there does not seem to be any observable effect of `applyMavenExclusions` in the dependency graph.
+Outside of hopefully avoiding the cost of inspecting the Maven POMs in the detached configuration used by the Spring Dependency Management Plugin and resolved by Gradle, as described by **Andy Wilkinson** insightful https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/222#issuecomment-411005109[comment] (and this https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/222#issuecomment-411346117[comment]) for https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/222[Issue #222] there does not seem to be any observable effect of `applyMavenExclusions` in the dependency graph.
 
 > DISCLAIMER: It is quite possible that I am doing something wrong, but the https://docs.spring.io/dependency-management-plugin/docs/current/reference/html/#maven-exclusions[documentation] was pretty straight forward and clear on the topic.
