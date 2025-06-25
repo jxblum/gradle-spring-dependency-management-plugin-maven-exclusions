@@ -1,12 +1,31 @@
+plugins {
+    java
+    id("org.springframework.boot") version "3.5.3"
+    id("io.spring.dependency-management") version "1.1.7"
+}
 
-description = "Spring Dependency Management Gradle Plugin Example with Maven Exclusions"
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
 
-allprojects {
-	group = "io.codeprimate.example"
-	version = "0.1.0-SNAPSHOT"
+repositories {
+    mavenCentral()
+    maven {
+        url = uri("file:repository/")
+    }
+}
 
-	repositories {
-		mavenCentral()
-		mavenLocal()
-	}
+dependencyManagement {
+    applyMavenExclusions(false)
+}
+
+dependencies {
+    implementation("io.codeprimate.example:maven-lib:0.1.2")
+    implementation("org.springframework:spring-beans:6.2.8")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
